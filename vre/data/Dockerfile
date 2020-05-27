@@ -7,7 +7,7 @@ ARG uid
 ARG gid
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    sudo ros-${distro}-desktop vim bash-completion \
+    sudo ros-${distro}-desktop python-catkin-tools vim bash-completion \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/${distro}-dev && \
@@ -18,6 +18,9 @@ RUN mkdir -p /home/${distro}-dev && \
     chown ${uid}:${gid} -R /home/${distro}-dev && \
     mkdir -p /run/user/${uid} && \
     chown ${uid}:${gid} -R /run/user/${uid}
+
+COPY bashrc /home/${distro}-dev/.bashrc
+COPY ros_entrypoint.sh /ros_entrypoint.sh
 
 USER ${distro}-dev
 ENV HOME /home/${distro}-dev
