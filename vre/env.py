@@ -1,6 +1,5 @@
 
 import os
-import pty
 import json
 import docker
 import hashlib
@@ -99,7 +98,8 @@ class VROSenv(object):
 
         client = docker.from_env()
         try:
-            _, res = client.images.build(path=buildpath, tag=self.base_id, buildargs=buildargs)
+            _, res = client.images.build(path=buildpath, tag=self.base_id,
+                    rm=True, buildargs=buildargs)
         except docker.errors.BuildError:
             res = None
 
@@ -149,11 +149,17 @@ class VROSenv(object):
                 self.id, '/ros_entrypoint.sh']
 
         if len(arguments) > 0:
+            # Append `rosrun` to argumensts list if the first
+            # argument starts with a '+'.
+            if arguments[0][0] == '+':
+                arguments[0] = arguments[0][1:]
+                bake.append('rosrun')
+
             bake.extend(arguments)
         else:
             bake.append('bash')
 
-        pty.spawn(bake)
+        os.system(' '.join(bake))
         numproc = len(container.top()['Processes'])
         if numproc == 1:
             container.stop()
