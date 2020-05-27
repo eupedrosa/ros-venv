@@ -25,3 +25,4 @@ COPY ros_entrypoint.sh /ros_entrypoint.sh
 USER ${distro}-dev
 ENV HOME /home/${distro}-dev
 ENV XDG_RUNTIME_DIR /run/user/${uid}
+ENV TERM xterm-color
