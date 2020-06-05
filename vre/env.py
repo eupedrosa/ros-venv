@@ -115,16 +115,24 @@ class VROSenv(object):
             # TODO:
             return # Cannot create env without base image
 
+        DISPLAY = os.getenv('DISPLAY')
+        # Generate authority file to acces X11
+        xauth = '/tmp/.Xauth-' + str(self.uid)
+        if not path.exists(xauth):
+            os.system('touch ' + xauth)
+            os.system(f"xauth nlist {DISPLAY} | sed -e 's/^..../ffff/' | xauth -f {xauth} nmerge -")
+
         client = docker.from_env()
 
         homedir = f'/home/{self.distro}-dev/'
         volumes = {path.abspath(k) : {'bind': homedir + path.basename(k), 'mode': 'ro'} for k in self.mounts}
         volumes['/tmp/.X11-unix'] = {'bind': '/tmp/.X11-unix', 'mode':'rw'}
+        volumes[xauth] = {'bind': '/tmp/.Xauth', 'mode':'rw'}
 
         client.containers.create(self.base_id, devices=['/dev/dri/card0:/dev/dri/card0:rw'],
                 hostname=self.id,
-                environment={'DISPLAY': os.getenv('DISPLAY')},
-                volumes=volumes, name=self.id, stdin_open=True, tty=True)
+                environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.Xauth'},
+                volumes=volumes, name=self.id, stdin_open=True, tty=True, privileged=True)
 
         client.close()
         self.env_container_exists = True

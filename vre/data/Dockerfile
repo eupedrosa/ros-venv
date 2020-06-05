@@ -7,7 +7,9 @@ ARG uid
 ARG gid
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-    sudo ros-${distro}-desktop python-catkin-tools vim bash-completion \
+    sudo ros-${distro}-desktop vim bash-completion \
+    && if [ "${distro}" = "noetic" ]; then apt-get install -y python3-osrf-pycommon python3-catkin-tools; else \
+    apt-get install -y python-catkin-tools; fi \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/${distro}-dev && \
