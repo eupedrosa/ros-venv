@@ -6,7 +6,7 @@ import hashlib
 
 from os import path
 
-from vre import PACKAGE_DIR
+from rve import PACKAGE_DIR
 
 class EnvNotFound(Exception):
     pass
@@ -14,9 +14,9 @@ class EnvNotFound(Exception):
 class EnvAlreadyExist(Exception):
     pass
 
-class VROSenv(object):
+class ROSVenv(object):
 
-    SIG_FILE = 'vROSenv'
+    SIG_FILE = 'ROSvenv'
 
     def __init__(self):
         self.id = None
@@ -58,10 +58,10 @@ class VROSenv(object):
 
         salt = '{}:{}:{}:{}:'.format(self.distro, self.root, self.uid, self.gid)
         salt = salt + '|'.join(self.mounts)
-        self.id = 'vre-' + os.path.basename(self.root) + '-' + \
+        self.id = 're-' + os.path.basename(self.root) + '-' + \
                 hashlib.sha1(salt.encode('utf-8')).hexdigest()[:16]
 
-        self.base_id = 'vre/{}/{}:{}'.format(self.uid, self.gid, self.distro)
+        self.base_id = 'rvenv/{}/{}:{}'.format(self.uid, self.gid, self.distro)
 
         # Check thing on docker
         client = docker.from_env()

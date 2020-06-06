@@ -2,10 +2,10 @@
 import os
 import sys
 
-from .env import VROSenv, EnvNotFound
+from .env import ROSVenv, EnvNotFound
 
 name = 'rm'
-desc = 'Remove the virtual ROS environment.'
+desc = 'Remove the ROS virtual environment.'
 
 def prepare_arguments(parser):
     return parser
@@ -22,7 +22,7 @@ def run(args):
 def _init(args):
 
     cwd = os.getcwd()
-    env = VROSenv()
+    env = ROSVenv()
 
     env.attach(cwd)
     sigfile = os.path.join(env.root, env.SIG_FILE)

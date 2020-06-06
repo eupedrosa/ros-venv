@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 
-from .env import VROSenv, EnvNotFound
+from .env import ROSVenv, EnvNotFound
 
 name = 'run'
 desc = 'Execute the given command or swpan a shell.'
@@ -27,7 +27,7 @@ def run(args):
 def _init(args):
 
     cwd = os.getcwd()
-    env = VROSenv()
+    env = ROSVenv()
 
     env.attach(cwd, args.distro)
 
@@ -35,7 +35,7 @@ def _init(args):
         print('Base user image does not exist, build it now? [y/N]', end=' ')
         choice = input().lower()
         if choice and choice[0] == 'y':
-            print(f'Building base, please wait...', end=' ', flush=True)
+            print(f'Building base, please wait... [this may take a while!]', end=' ', flush=True)
             ok = env.build_base()
             if ok:
                 print('[DONE]')

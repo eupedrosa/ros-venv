@@ -2,22 +2,22 @@
 import sys
 import argparse
 
-import vre.init
-import vre.remove
-import vre.run
+import rve.init
+import rve.remove
+import rve.run
 
 def _create_sub_parsers(parser):
 
-    cmds = [vre.init, vre.remove, vre.run]
+    cmds = [rve.init, rve.remove, rve.run]
     cmds_names = [x.name for x in cmds]
     cmds_list = '[' + '|'.join(cmds_names) + ']'
 
-    desc = 'call `vre command -h` for help in each command listed below:\n'
+    desc = 'call `re command -h` for help in each command listed below:\n'
     for c in cmds:
         desc += f'\n {c.name}\t\t{c.desc}'
 
     subparser = parser.add_subparsers(
-            title='vre command',
+            title='re command',
             metavar=cmds_list,
             description=desc,
             dest='cmd')
@@ -30,7 +30,7 @@ def _create_sub_parsers(parser):
 
 def main():
 
-    parser = argparse.ArgumentParser(description='vre command',
+    parser = argparse.ArgumentParser(description='re command',
             formatter_class=argparse.RawDescriptionHelpFormatter)
     _create_sub_parsers(parser)
     args = parser.parse_args()

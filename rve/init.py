@@ -2,10 +2,10 @@
 import os
 import sys
 
-from .env import VROSenv, EnvNotFound, EnvAlreadyExist
+from .env import ROSVenv, EnvNotFound, EnvAlreadyExist
 
 name = 'init'
-desc = 'Initialize the current directory with a virtual ROS environment.'
+desc = 'Initialize the current directory with a ROS virtual environment.'
 
 def prepare_arguments(parser):
     parser.add_argument('--distro', type=str,
@@ -32,7 +32,7 @@ def run(args):
 def _init(args):
 
     cwd = os.getcwd()
-    env = VROSenv()
+    env = ROSVenv()
 
     # Possible mounts
     mounts = [x for x in os.listdir(cwd)]
