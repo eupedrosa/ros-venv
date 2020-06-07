@@ -1,5 +1,6 @@
 
 import os
+import re
 import json
 import docker
 import hashlib
@@ -58,7 +59,9 @@ class ROSVenv(object):
 
         salt = '{}:{}:{}:{}:'.format(self.distro, self.root, self.uid, self.gid)
         salt = salt + '|'.join(self.mounts)
-        self.id = 're-' + os.path.basename(self.root) + '-' + \
+
+        safe_name = re.sub('[^a-zA-Z0-9_.-]', '_', os.path.basename(self.root))
+        self.id = 're-' + safe_name + '-' + \
                 hashlib.sha1(salt.encode('utf-8')).hexdigest()[:16]
 
         self.base_id = 'rvenv/{}/{}:{}'.format(self.uid, self.gid, self.distro)
@@ -117,21 +120,36 @@ class ROSVenv(object):
 
         DISPLAY = os.getenv('DISPLAY')
         # Generate authority file to acces X11
-        xauth = '/tmp/.Xauth-' + str(self.uid)
+        xauth = '/tmp/.docker.xauth-' + str(self.uid)
         if not path.exists(xauth):
             os.system('touch ' + xauth)
             os.system(f"xauth nlist {DISPLAY} | sed -e 's/^..../ffff/' | xauth -f {xauth} nmerge -")
 
         client = docker.from_env()
 
-        homedir = f'/home/{self.distro}-dev/'
-        volumes = {path.abspath(k) : {'bind': homedir + path.basename(k), 'mode': 'ro'} for k in self.mounts}
+        # Mounts for X11
+        volumes = {}
         volumes['/tmp/.X11-unix'] = {'bind': '/tmp/.X11-unix', 'mode':'rw'}
-        volumes[xauth] = {'bind': '/tmp/.Xauth', 'mode':'rw'}
+        volumes[xauth] = {'bind': '/tmp/.docker.xauth', 'mode':'rw'}
+
+        # User mounts
+        homedir = f'/home/{self.distro}-dev/src'
+        for k, v in self.mounts.items():
+            for p in v:
+                # By default all directories are mounted as read-only, unless
+                # the directory ends with an '!'.
+                if p[-1] == '!':
+                    p = p[:-1]
+                    mode = 'rw'
+                else:
+                    mode = 'ro'
+
+                mpath = path.join(homedir, k, path.basename(p))
+                volumes[path.abspath(p)] = {'bind': mpath, 'mode': mode}
 
         client.containers.create(self.base_id, devices=['/dev/dri/card0:/dev/dri/card0:rw'],
                 hostname=self.id,
-                environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.Xauth'},
+                environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.docker.xauth'},
                 volumes=volumes, name=self.id, stdin_open=True, tty=True, privileged=True)
 
         client.close()
@@ -188,8 +206,7 @@ class ROSVenv(object):
         client.close()
 
     def print(self):
-        info = 'vROSenv for "{}" with volumes {}'.format(
-                self.distro, '[' + '|'.join(self.mounts) + ']')
+        info = f'ROSvenv for "{self.distro}"'
         print(info)
 
     def _get_root(self, start_directory):

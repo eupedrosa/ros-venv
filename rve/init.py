@@ -1,6 +1,7 @@
 
 import os
 import sys
+import yaml
 
 from .env import ROSVenv, EnvNotFound, EnvAlreadyExist
 
@@ -17,6 +18,8 @@ def prepare_arguments(parser):
             help='add all directories to the mount list')
     parser.add_argument('--dir', type=str, action='append',
             help='add DIR to mount the mount list')
+    parser.add_argument('--overlay', action='store_true', default=False,
+            help='create an overlay environment from `overlay.yml`')
 
     return parser
 
@@ -25,6 +28,8 @@ def run(args):
     try:
         return _init(args)
     except EnvAlreadyExist as e:
+        print(e)
+    except FileNotFoundError as e:
         print(e)
     return 1
 
@@ -39,8 +44,33 @@ def _init(args):
     if not args.all:
         # The argument --all was not used.
         # Hence, only the directories added with --dir will go to the mount list.
-        # The directory must exist to be a valid mount point
-        mounts = list(set(args.dir or []) & set(mounts))
+        mounts = list(set(args.dir or []))
+
+    print(mounts)
+    mounts = { os.path.basename(cwd): mounts }
+
+    # Add extra mounts if this is an overlay
+    if args.overlay:
+        print('overlay')
+        with open('overlay.yml') as f:
+            overlay = yaml.load(f, Loader=yaml.SafeLoader)
+
+        for p in overlay['overlays']:
+            overlay_path = os.path.abspath(os.path.expanduser(p))
+            sigfile = os.path.join(overlay_path, 'ROSvenv')
+            if not os.path.isfile(sigfile):
+                print(f"The path '{overlay_path}' is not an ROS environment")
+                exit(1)
+
+            with open(sigfile, 'r') as f:
+                overlay_info = yaml.load(f, Loader=yaml.SafeLoader)
+            for k, v in overlay_info['mounts'].items():
+                for p in v:
+                    mounts[k] = []
+                    if os.path.isabs(p):
+                        mounts[k].append(p)
+                    else:
+                        mounts[k].append(os.path.join(overlay_path, p))
 
     env.signify(cwd, args.distro, mounts)
     env.attach(cwd)
