@@ -65,8 +65,8 @@ def _init(args):
             with open(sigfile, 'r') as f:
                 overlay_info = yaml.load(f, Loader=yaml.SafeLoader)
             for k, v in overlay_info['mounts'].items():
+                mounts[k] = []
                 for p in v:
-                    mounts[k] = []
                     if os.path.isabs(p):
                         mounts[k].append(p)
                     else:
