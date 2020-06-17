@@ -170,7 +170,7 @@ class ROSVenv(object):
         if container.status != 'running':
             container.start()
 
-        bake = ['/bin/docker', 'exec', '-w',
+        bake = ['docker', 'exec', '-w',
                 f'/home/{self.distro}-dev', '-ti',
                 self.id, '/ros_entrypoint.sh']
 
