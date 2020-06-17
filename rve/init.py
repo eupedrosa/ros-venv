@@ -13,7 +13,7 @@ def prepare_arguments(parser):
             default=os.environ.get('ROS_DISTRO', default='melodic'),
             help='ROS distro')
     parser.add_argument('-b', '--build', action='store_true', default=False,
-            help='build user base image if it does not exist')
+            help='build user base image if it does not exist without asking')
     parser.add_argument('--all', action='store_true', default=False,
             help='add all directories to the mount list')
     parser.add_argument('--dir', type=str, action='append',
