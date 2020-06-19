@@ -14,10 +14,12 @@ def prepare_arguments(parser):
             help='ROS distro')
     parser.add_argument('-b', '--build', action='store_true', default=False,
             help='build user base image if it does not exist without asking')
-    parser.add_argument('--all', action='store_true', default=False,
-            help='add all directories to the mount list')
-    parser.add_argument('--dir', type=str, action='append',
-            help='add DIR to mount the mount list')
+    # parser.add_argument('--all', action='store_true', default=False,
+    #         help='add all directories to the mount list')
+    parser.add_argument('--src', type=str, action='append',
+            help='add SRC directory to the source mount list')
+    parser.add_argument('--data', type=str, action='append',
+            help='add DATA directory to the data mount list')
     parser.add_argument('--overlay', action='store_true', default=False,
             help='create an overlay environment from `overlay.yml`')
 
@@ -39,17 +41,8 @@ def _init(args):
     cwd = os.getcwd()
     env = ROSVenv()
 
-    # Possible mounts
-    mounts = [x for x in os.listdir(cwd)]
-    if not args.all:
-        # The argument --all was not used.
-        # Hence, only the directories added with --dir will go to the mount list.
-        mounts = list(set(args.dir or []))
-
-    print(mounts)
-    mounts = { os.path.basename(cwd): mounts }
-
-    # Add extra mounts if this is an overlay
+    src_mounts = {}  if args.src  is None else {os.path.basename(cwd): args.src}
+    # Add extra source mounts if this is an overlay
     if args.overlay:
         print('overlay')
         with open('overlay.yml') as f:
@@ -64,15 +57,17 @@ def _init(args):
 
             with open(sigfile, 'r') as f:
                 overlay_info = yaml.load(f, Loader=yaml.SafeLoader)
-            for k, v in overlay_info['mounts'].items():
-                mounts[k] = []
+            for k, v in overlay_info['src'].items():
+                src_mounts[k] = []
                 for p in v:
                     if os.path.isabs(p):
-                        mounts[k].append(p)
+                        src_mounts[k].append(p)
                     else:
-                        mounts[k].append(os.path.join(overlay_path, p))
+                        src_mounts[k].append(os.path.join(overlay_path, p))
 
-    env.signify(cwd, args.distro, mounts)
+    data_mounts = [] if args.data is None else args.data
+
+    env.signify(cwd, args.distro, src_mounts, data_mounts)
     env.attach(cwd)
 
     env.print()

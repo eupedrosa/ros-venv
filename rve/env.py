@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import copy
 import docker
 import hashlib
 
@@ -22,13 +23,14 @@ class ROSVenv(object):
     def __init__(self):
         self.id = None
 
-    def signify(self, directory, distro, mounts):
+    def signify(self, directory, distro, src_mounts, data_mounts):
         """ Create a signature file in the given directory.
 
         Parameters:
             directory (str): Put signature file in this directory.
             distro (str): ROS distro to use.
-            mounts (list): List of directories to mount into the environment.
+            src_mounts (list): List of directories to mount under ~/src.
+            data_mounts (list): List of directories to mount under ~/data.
 
         Raises:
             EnvAlreadyExist: A signature file already exists.
@@ -39,7 +41,7 @@ class ROSVenv(object):
                 raise EnvAlreadyExist('A virtual ROS environment already exists at this directory')
 
             with open(sig, 'w') as f:
-                f.write(json.dumps({'distro': distro, 'mounts': mounts}, indent=4))
+                f.write(json.dumps({'distro': distro, 'src': src_mounts, 'data': data_mounts}, indent=4))
 
     def attach(self, maybe_root, force_distro=None):
         """ Find the environment root and get its properties.
@@ -55,10 +57,16 @@ class ROSVenv(object):
         with open(sigfile, 'r') as f:
             info = json.load(f)
             self.distro = info['distro'] if force_distro is None else force_distro
-            self.mounts = info['mounts']
+            self.src_mounts = info['src']
+            self.data_mounts = info['data']
 
         salt = '{}:{}:{}:{}:'.format(self.distro, self.root, self.uid, self.gid)
-        salt = salt + '|'.join(self.mounts)
+        # salt with a list of all mounts
+        mount = copy.copy(self.data_mounts)
+        for k, v in self.src_mounts.items():
+            mount.append(k)
+            mount.extend(v)
+        salt = salt + '|'.join(mount)
 
         safe_name = re.sub('[^a-zA-Z0-9_.-]', '_', os.path.basename(self.root))
         self.id = 're-' + safe_name + '-' + \
@@ -132,9 +140,9 @@ class ROSVenv(object):
         volumes['/tmp/.X11-unix'] = {'bind': '/tmp/.X11-unix', 'mode':'rw'}
         volumes[xauth] = {'bind': '/tmp/.docker.xauth', 'mode':'rw'}
 
-        # User mounts
+        # source mounts
         homedir = f'/home/{self.distro}-dev/src'
-        for k, v in self.mounts.items():
+        for k, v in self.src_mounts.items():
             for p in v:
                 # By default all directories are mounted as read-only, unless
                 # the directory ends with an '!'.
@@ -146,6 +154,20 @@ class ROSVenv(object):
 
                 mpath = path.join(homedir, k, path.basename(p))
                 volumes[path.abspath(p)] = {'bind': mpath, 'mode': mode}
+
+        # data mounts
+        homedir = f'/home/{self.distro}-dev/data'
+        for p in self.data_mounts:
+            # By default all directories are mounted as read-only, unless
+            # the directory ends with an '!'.
+            if p[-1] == '!':
+                p = p[:-1]
+                mode = 'rw'
+            else:
+                mode = 'ro'
+
+            mpath = path.join(homedir, path.basename(p))
+            volumes[path.abspath(p)] = {'bind': mpath, 'mode': mode}
 
         client.containers.create(self.base_id, devices=['/dev/dri/card0:/dev/dri/card0:rw'],
                 hostname=self.id,

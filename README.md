@@ -24,8 +24,17 @@ Run `re --help` for information about the available commands.
 
 #### Create an environment
 Run `re init` at the root of your workspace.
-Use multiple `--dir` to add child directories to mount on the the environment container, or `--all` to include all child directories.
-It will create a `ROSvenv` file that marks the current directory as the virtual ROS environment root directory.
+It will create a `ROSvenv` file that marks the current directory as the ROS environment root directory.
+
+Use multiple `--src` to mount directories under the `src` directory in the ROS environment,
+and multiple `--data` to mount directories under the `data` directory in the ROS environment,
+
+Example:
+```sh
+re init --src my-awsome-code --data write-here!
+```
+Here `my-awsome-code` will be mounter under `src/my-awsome-code` with *read-only* properties and
+`write-here` will be mounter under `data/write-here` with *read-write* properties.
 
 #### Step into the virtual environment
 Run `re run` in the environment root path, or any of its child directories, to launch a bash shell inside the virtual environment.
