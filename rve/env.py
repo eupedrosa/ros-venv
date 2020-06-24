@@ -126,12 +126,7 @@ class ROSVenv(object):
             # TODO:
             return # Cannot create env without base image
 
-        DISPLAY = os.getenv('DISPLAY')
-        # Generate authority file to acces X11
-        xauth = '/tmp/.docker.xauth-' + str(self.uid)
-        if not path.exists(xauth):
-            os.system('touch ' + xauth)
-            os.system(f"xauth nlist {DISPLAY} | sed -e 's/^..../ffff/' | xauth -f {xauth} nmerge -")
+        self._ensure_xauth()
 
         client = docker.from_env()
 
@@ -185,6 +180,8 @@ class ROSVenv(object):
         if not self.env_container_exists:
             # TODO:
             return # Cannot create env without base image
+
+        self._ensure_xauth()
 
         client = docker.from_env()
 
@@ -264,5 +261,16 @@ class ROSVenv(object):
             raise EnvNotFound(f'Virtual ROS environment not found')
 
         return curdir
+
+    def _ensure_xauth(self):
+        """ Make sure an X11 authority file with the right permissions exists.
+        """
+
+        DISPLAY = os.getenv('DISPLAY')
+        # Generate authority file to acces X11
+        xauth = '/tmp/.docker.xauth-' + str(self.uid)
+        if not path.exists(xauth):
+            os.system('touch ' + xauth)
+            os.system(f"xauth nlist {DISPLAY} | sed -e 's/^..../ffff/' | xauth -f {xauth} nmerge -")
 
 
