@@ -127,7 +127,7 @@ class ROSVenv(object):
             return # Cannot create env without base image
 
         self._ensure_xauth()
-
+        xauth = '/tmp/.docker.xauth-' + str(self.uid)
         client = docker.from_env()
 
         # Mounts for X11
