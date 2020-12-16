@@ -35,6 +35,7 @@ rosh init --src my-awsome-code --data write-here!
 ```
 Here `my-awsome-code` will be mounter under `src/my-awsome-code` with *read-only* properties and
 `write-here` will be mounter under `data/write-here` with *read-write* properties.
+Note that `!` at the end of the directory name is required for *read-write* properties.
 
 #### Step into the virtual environment
 Run `rosh run` in the environment root path, or any of its child directories, to launch a bash shell inside the virtual environment.
