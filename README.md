@@ -19,7 +19,7 @@ python3 setup.py install
 
 ## Quick start
 
-After installation the command `rosh` (short for ros-environment) should be available.
+After installation the command `rosh` should be available.
 Run `rosh --help` for information about the available commands.
 
 #### Create an environment
@@ -40,8 +40,8 @@ Here `my-awsome-code` will be mounter under `src/my-awsome-code` with *read-only
 Run `rosh run` in the environment root path, or any of its child directories, to launch a bash shell inside the virtual environment.
 
 #### Quickly launch a program
-You can, for example, run `re run roscore` to launch a `roscore` without stepping into a shell first.
-Try `rosh run roscore` in one shell and `re run rviz` in another to verify that GL applications are working.
+You can, for example, run `rosh run roscore` to launch a `roscore` without stepping into a shell first.
+Try `rosh run roscore` in one shell and `rosh run rviz` in another to verify that GL applications are working.
 
 
 ## Credits
