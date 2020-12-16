@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 
-from .env import ROSVenv, EnvNotFound
+from rve.env import ROSVenv, EnvNotFound
 
 name = 'run'
 desc = 'Execute the given command or swpan a shell.'

@@ -12,7 +12,7 @@ def read(fname):
 setup(
     name = "ros-venv",
     version = "0.0.1",
-    install_requires=['docker==4.2.0'],
+    install_requires=['docker==4.2.0', 'colorama=0.4.3'],
     author = "Eurico Pedrosa",
     author_email = "efp@ua.pt",
     description = ("Virtual ROS Environment is a tool to create isolated ROS environments."),
@@ -29,5 +29,5 @@ setup(
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
-    entry_points={'console_scripts': ['re=rve.main:main']},
+    entry_points={'console_scripts': ['rosh=rve.main:main']},
 )

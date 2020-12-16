@@ -3,7 +3,7 @@ import os
 import sys
 import yaml
 
-from .env import ROSVenv, EnvNotFound, EnvAlreadyExist
+from rve.env import ROSVenv, EnvNotFound, EnvAlreadyExist
 
 name = 'init'
 desc = 'Initialize the current directory with a ROS virtual environment.'

@@ -19,11 +19,11 @@ python3 setup.py install
 
 ## Quick start
 
-After installation the command `re` (short for ros-environment) should be available.
-Run `re --help` for information about the available commands.
+After installation the command `rosh` (short for ros-environment) should be available.
+Run `rosh --help` for information about the available commands.
 
 #### Create an environment
-Run `re init` at the root of your workspace.
+Run `rosh init` at the root of your workspace.
 It will create a `ROSvenv` file that marks the current directory as the ROS environment root directory.
 
 Use multiple `--src` to mount directories under the `src` directory in the ROS environment,
@@ -31,17 +31,17 @@ and multiple `--data` to mount directories under the `data` directory in the ROS
 
 Example:
 ```sh
-re init --src my-awsome-code --data write-here!
+rosh init --src my-awsome-code --data write-here!
 ```
 Here `my-awsome-code` will be mounter under `src/my-awsome-code` with *read-only* properties and
 `write-here` will be mounter under `data/write-here` with *read-write* properties.
 
 #### Step into the virtual environment
-Run `re run` in the environment root path, or any of its child directories, to launch a bash shell inside the virtual environment.
+Run `rosh run` in the environment root path, or any of its child directories, to launch a bash shell inside the virtual environment.
 
 #### Quickly launch a program
 You can, for example, run `re run roscore` to launch a `roscore` without stepping into a shell first.
-Try `re run roscore` in one shell and `re run rviz` in another to verify that GL applications are working.
+Try `rosh run roscore` in one shell and `re run rviz` in another to verify that GL applications are working.
 
 
 ## Credits

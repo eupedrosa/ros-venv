@@ -5,10 +5,12 @@ import json
 import copy
 import docker
 import hashlib
+import platform
 
 from os import path
 
 from rve import PACKAGE_DIR
+from rve.container import Container
 
 class EnvNotFound(Exception):
     pass
@@ -164,9 +166,12 @@ class ROSVenv(object):
             mpath = path.join(homedir, path.basename(p))
             volumes[path.abspath(p)] = {'bind': mpath, 'mode': mode}
 
-        client.containers.create(self.base_id, devices=['/dev/dri/card0:/dev/dri/card0:rw'],
+        client.containers.create(self.base_id,
+                devices=['/dev/dri:/dev/dri'], group_add=['video'],
+                # network_mode='host', extra_hosts={platform.node(): '127.0.0.1', self.id: '127.0.0.1'},
                 hostname=self.id,
-                environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.docker.xauth'},
+                # environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.docker.xauth', 'ROS_HOSTNAME': platform.node() },
+                environment={'DISPLAY': os.getenv('DISPLAY'), 'XAUTHORITY': '/tmp/.docker.xauth' },
                 volumes=volumes, name=self.id, stdin_open=True, tty=True, privileged=True)
 
         client.close()

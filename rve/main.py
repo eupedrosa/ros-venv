@@ -1,23 +1,22 @@
 
 import sys
 import argparse
+import colorama
 
-import rve.init
-import rve.remove
-import rve.run
+from rve import cmd
 
 def _create_sub_parsers(parser):
 
-    cmds = [rve.init, rve.remove, rve.run]
+    cmds = [cmd.init, cmd.remove, cmd.run, cmd.status]
     cmds_names = [x.name for x in cmds]
     cmds_list = '[' + '|'.join(cmds_names) + ']'
 
-    desc = 'call `re command -h` for help in each command listed below:\n'
+    desc = 'call `rosh command -h` for help in each command listed below:\n'
     for c in cmds:
         desc += f'\n {c.name}\t\t{c.desc}'
 
     subparser = parser.add_subparsers(
-            title='re command',
+            title='rosh command',
             metavar=cmds_list,
             description=desc,
             dest='cmd')
@@ -30,7 +29,9 @@ def _create_sub_parsers(parser):
 
 def main():
 
-    parser = argparse.ArgumentParser(description='re command',
+    colorama.init(autoreset=True)
+
+    parser = argparse.ArgumentParser(description='rosh command',
             formatter_class=argparse.RawDescriptionHelpFormatter)
     _create_sub_parsers(parser)
     args = parser.parse_args()
